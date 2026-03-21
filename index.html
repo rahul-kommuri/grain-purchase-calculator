@@ -224,6 +224,12 @@
     border: 1.5px solid var(--border);
   }
   .btn-clear:hover { background: #f0f0f0; }
+  .btn-ble {
+    background: #1a4731;
+    color: white;
+  }
+  .btn-ble:hover { background: #0f2e1f; }
+  .btn-ble:disabled { background: #888; cursor: not-allowed; opacity: 0.7; }
 
   /* ── INFO ROW ── */
   .info-row {
@@ -456,14 +462,25 @@
       <div class="th-words" id="res-amountWords"></div>
     </div>
 
+    <!-- BLE Status Bar -->
+    <div id="ble-status-bar" style="display:none; align-items:center; gap:10px; background:#f0f9f2; border:1px solid #b7dfc4; border-radius:6px; padding:8px 12px; margin-bottom:10px; font-size:0.78rem; color:#1a4731;">
+      <span id="ble-dot" style="width:8px;height:8px;border-radius:50%;background:#ccc;flex-shrink:0;display:inline-block;"></span>
+      <span id="ble-msg">Not connected</span>
+      <button onclick="bleDisconnect()" id="ble-disc-btn" style="display:none;margin-left:auto;padding:3px 10px;border:1px solid #ccc;border-radius:4px;background:white;font-size:0.75rem;cursor:pointer;">Disconnect</button>
+    </div>
+
     <div class="btn-row">
+      <button class="btn btn-ble" id="btn-ble-print" onclick="handleBlePrint()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/></svg>
+        <span id="ble-btn-label">Connect &amp; Print</span>
+      </button>
       <button class="btn btn-print" onclick="handlePrint()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Print Receipt
+        Screen Print
       </button>
       <button class="btn btn-clear" onclick="handleClear()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.99"/></svg>
-        Clear Form
+        Clear
       </button>
     </div>
   </div>
@@ -529,6 +546,277 @@
 
 <script>
 const NIKAR_KG = 77.5;
+
+/* ═══════════════════════════════════════════
+   BLE PRINTER ENGINE
+   Supports three UUID sets used by KPC307-type printers.
+   Priority: tries 18f0/2af1 first, then 49535343, then ff00/ff02.
+═══════════════════════════════════════════ */
+const BLE_PROFILES = [
+  {
+    // Profile A — most common on SPP6+BLE thermal printers (18F0 series)
+    service:    '0000018f-0000-1000-8000-00805f9b34fb',
+    writeChar:  '00002af1-0000-1000-8000-00805f9b34fb',
+    label: '18F0/2AF1'
+  },
+  {
+    // Profile B — ISSC / Microchip BLE UART (49535343 series)
+    service:    '49535343-fe7d-4ae5-8fa9-9fafd205e455',
+    writeChar:  '49535343-8841-43f4-a8d4-ecbe34729bb3',
+    label: '49535343'
+  },
+  {
+    // Profile C — common fallback FF00 series
+    service:    '0000ff00-0000-1000-8000-00805f9b34fb',
+    writeChar:  '0000ff02-0000-1000-8000-00805f9b34fb',
+    label: 'FF00/FF02'
+  }
+];
+
+let bleDevice = null;
+let bleChar   = null;
+let bleProfile = null;
+
+function bleSetStatus(msg, color, showDisc) {
+  const bar = document.getElementById('ble-status-bar');
+  bar.style.display = 'flex';
+  document.getElementById('ble-dot').style.background = color;
+  document.getElementById('ble-msg').textContent = msg;
+  document.getElementById('ble-disc-btn').style.display = showDisc ? 'inline-block' : 'none';
+}
+
+function bleDisconnect() {
+  if (bleDevice && bleDevice.gatt.connected) bleDevice.gatt.disconnect();
+  bleDevice = null; bleChar = null; bleProfile = null;
+  document.getElementById('ble-btn-label').textContent = 'Connect & Print';
+  bleSetStatus('Disconnected', '#ccc', false);
+}
+
+async function bleConnect() {
+  bleSetStatus('Scanning for printer…', '#f0a500', false);
+
+  const allServices = BLE_PROFILES.map(p => p.service);
+  bleDevice = await navigator.bluetooth.requestDevice({
+    acceptAllDevices: false,
+    filters: [{ services: [BLE_PROFILES[0].service] },
+              { services: [BLE_PROFILES[1].service] },
+              { services: [BLE_PROFILES[2].service] }],
+    optionalServices: allServices
+  }).catch(() => {
+    // If filter fails (printer not advertising those services), try acceptAllDevices
+    return navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: allServices
+    });
+  });
+
+  bleDevice.addEventListener('gattserverdisconnected', () => {
+    bleChar = null;
+    bleSetStatus('Printer disconnected', '#e74c3c', false);
+    document.getElementById('ble-btn-label').textContent = 'Connect & Print';
+  });
+
+  bleSetStatus('Connecting…', '#f0a500', false);
+  const server = await bleDevice.gatt.connect();
+
+  // Try each profile until one works
+  for (const profile of BLE_PROFILES) {
+    try {
+      const svc  = await server.getPrimaryService(profile.service);
+      const char = await svc.getCharacteristic(profile.writeChar);
+      bleChar    = char;
+      bleProfile = profile;
+      break;
+    } catch(e) { /* try next */ }
+  }
+
+  if (!bleChar) throw new Error('No compatible print service found on this device.\nPlease use nRF Connect app to find the correct UUID and contact support.');
+
+  bleSetStatus('Connected · ' + bleDevice.name + ' (' + bleProfile.label + ')', '#27ae60', true);
+  document.getElementById('ble-btn-label').textContent = 'Print to Printer';
+}
+
+/* ESC/POS encoder — pure JS, no dependencies */
+function buildEscPos(data) {
+  const { bags, over, rate, bags_net, over_net, net_weight,
+          total_nikarams, whole, rem_kgs, amount, amt_fmt,
+          words_str, receipt_no, date_str } = data;
+
+  const ESC = 0x1B, GS = 0x1D;
+  const bytes = [];
+
+  const push = (...args) => args.forEach(b => bytes.push(b));
+  const text = (str) => { for (const c of str) bytes.push(c.charCodeAt(0) & 0xFF); };
+  const lf   = ()      => bytes.push(0x0A);
+  const line  = (ch = '-', n = 32) => { text(ch.repeat(n)); lf(); };
+  const dline = (n = 32) => { text('='.repeat(n)); lf(); };
+
+  const row = (left, right, width = 32) => {
+    const gap = width - left.length - right.length;
+    text(left + (gap > 0 ? ' '.repeat(gap) : ' ') + right);
+    lf();
+  };
+
+  const center = (str, width = 32) => {
+    const pad = Math.max(0, Math.floor((width - str.length) / 2));
+    text(' '.repeat(pad) + str);
+    lf();
+  };
+
+  // ── INIT ──
+  push(ESC, 0x40);               // Initialize printer
+  push(ESC, 0x61, 0x01);         // Center align
+
+  // ── HEADER ──
+  push(ESC, 0x21, 0x30);         // Double width + height
+  text('SIDDHARTHA'); lf();
+  text('TRADERS'); lf();
+  push(ESC, 0x21, 0x00);         // Normal size
+  push(ESC, 0x45, 0x01);         // Bold ON
+  text('PURCHASE RECEIPT'); lf();
+  push(ESC, 0x45, 0x00);         // Bold OFF
+  push(ESC, 0x61, 0x00);         // Left align
+  line('-');
+
+  // ── META ──
+  row('Receipt:', receipt_no);
+  row('Date:', date_str);
+  line('-');
+
+  // ── PURCHASE DETAILS ──
+  push(ESC, 0x45, 0x01);
+  text('PURCHASE DETAILS'); lf();
+  push(ESC, 0x45, 0x00);
+  row('70 Kg Bags', bags + ' bags');
+  row('Over Kgs', over + ' Kg');
+  row('(-) Packing deduct', '-' + bags + ' Kg');
+  row('(-) Over Kg deduct', over > 0 ? '-1 Kg' : '0 Kg');
+  line('-');
+  push(ESC, 0x45, 0x01);
+  row('Net Weight', net_weight.toFixed(2) + ' Kg');
+  push(ESC, 0x45, 0x00);
+  line('-');
+
+  // ── CALCULATION ──
+  push(ESC, 0x45, 0x01);
+  text('NIKARAM CALCULATION'); lf();
+  push(ESC, 0x45, 0x00);
+  row('1 Nikar', '= 77.5 Kg');
+  row('Total Nikarams', total_nikarams.toFixed(4));
+  row('Whole Nikharams', whole + ' x 77.5');
+  row('Remaining Kgs', rem_kgs.toFixed(2) + ' Kg');
+  row('Rate / Nikar', 'Rs.' + Number(rate).toLocaleString('en-IN'));
+  line('-');
+
+  // ── TOTAL (big) ──
+  dline();
+  push(ESC, 0x61, 0x01);         // Center
+  push(ESC, 0x45, 0x01);         // Bold
+  text('TOTAL AMOUNT'); lf();
+  push(ESC, 0x21, 0x30);         // Double width+height
+  text('Rs.' + amt_fmt); lf();
+  push(ESC, 0x21, 0x00);         // Normal
+  push(ESC, 0x45, 0x00);
+  // wrap words to 32 chars
+  const ww = words_str.match(/.{1,30}(\s|$)/g) || [words_str];
+  ww.forEach(w => { text(w.trim()); lf(); });
+  dline();
+
+  // ── TERMS ──
+  push(ESC, 0x61, 0x00);         // Left
+  text('1 Nikar=77.5Kg | 1Kg/bag packing'); lf();
+  text('1Kg deducted from over kgs'); lf();
+  text('Computer generated receipt'); lf();
+  line('-');
+
+  // ── SIGNATURE ──
+  push(ESC, 0x61, 0x01);
+  lf();
+  text('Authorized Signature'); lf();
+  text('________________'); lf();
+  text('Siddhartha Traders'); lf();
+  dline();
+  text('*** Thank You ***'); lf();
+  lf(); lf(); lf();
+
+  // ── AUTO CUT ──
+  push(GS, 0x56, 0x41, 0x03);   // Full cut
+
+  return new Uint8Array(bytes);
+}
+
+async function bleSend(uint8arr) {
+  // BLE MTU is typically 20 bytes; chunk safely at 100 for GATT Write Without Response
+  // Most thermal printer BLE stacks accept up to 512 bytes per write, but 100 is safe
+  const CHUNK = 100;
+  for (let i = 0; i < uint8arr.length; i += CHUNK) {
+    const chunk = uint8arr.slice(i, i + CHUNK);
+    try {
+      await bleChar.writeValueWithoutResponse(chunk);
+    } catch(e) {
+      // Fallback to writeValue if writeValueWithoutResponse not supported
+      await bleChar.writeValue(chunk);
+    }
+    // Small delay between chunks to avoid buffer overflow on printer
+    await new Promise(r => setTimeout(r, 30));
+  }
+}
+
+async function handleBlePrint() {
+  if (!navigator.bluetooth) {
+    alert('Web Bluetooth is not supported in this browser.\nPlease use Chrome on Android (version 56+).');
+    return;
+  }
+  const { bags, over, rate } = getValues();
+  if (rate <= 0) { alert('Please enter a Rate first.'); return; }
+
+  const btn = document.getElementById('btn-ble-print');
+  btn.disabled = true;
+
+  try {
+    // Connect if not already connected
+    if (!bleChar || !bleDevice || !bleDevice.gatt.connected) {
+      await bleConnect();
+    }
+
+    bleSetStatus('Building receipt…', '#f0a500', true);
+
+    const bags_net       = (bags * 70) - bags;
+    const over_net       = over > 0 ? over - 1 : 0;
+    const net_weight     = bags_net + over_net;
+    const total_nikarams = net_weight / NIKAR_KG;
+    const whole          = Math.floor(total_nikarams);
+    const rem_kgs        = (total_nikarams - whole) * NIKAR_KG;
+    const amount         = total_nikarams * rate;
+    const amt_fmt        = amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const now = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const date_str   = pad(now.getDate()) + '-' + pad(now.getMonth()+1) + '-' + now.getFullYear();
+    const receipt_no = 'ST-' + now.getFullYear() + pad(now.getMonth()+1) + pad(now.getDate()) + '-' + pad(now.getHours()) + pad(now.getMinutes());
+    const words_str  = numberToWords(amount);
+
+    const escData = buildEscPos({ bags, over, rate, bags_net, over_net, net_weight,
+      total_nikarams, whole, rem_kgs, amount, amt_fmt, words_str, receipt_no, date_str });
+
+    bleSetStatus('Sending to printer…', '#f0a500', true);
+    await bleSend(escData);
+    bleSetStatus('Printed successfully! Connected · ' + bleDevice.name, '#27ae60', true);
+
+  } catch(err) {
+    console.error('BLE print error:', err);
+    bleSetStatus('Error: ' + err.message, '#e74c3c', false);
+    bleChar = null;
+    document.getElementById('ble-btn-label').textContent = 'Connect & Print';
+    alert('Print failed:\n' + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   SCREEN / POPUP PRINT (fallback)
+═══════════════════════════════════════════ */
 
 function getValues() {
   return {
@@ -735,4 +1023,3 @@ function convertNum(n) {
 </script>
 </body>
 </html>
-
