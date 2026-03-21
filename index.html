@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ధాన్యం కొనుగోలు లెక్కలు – Siddhartha Traders</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-dark: #1a4731;
+    --green-mid: #2e844a;
+    --green-light: #d4edda;
+    --green-pale: #f0f9f2;
+    --gold: #b8860b;
+    --gold-light: #fff8e1;
+    --blue: #0176d3;
+    --text: #181818;
+    --text-muted: #5a5a5a;
+    --border: #d0d0d0;
+    --bg: #f5f7f5;
+    --white: #ffffff;
+    --red: #c0392b;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans Telugu', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── TOP BANNER ── */
+  .top-banner {
+    background: var(--green-dark);
+    color: white;
+    text-align: center;
+    padding: 14px 20px 10px;
+    border-bottom: 3px solid var(--gold);
+  }
+  .top-banner h1 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .top-banner p {
+    font-size: 0.78rem;
+    opacity: 0.8;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── LAYOUT ── */
+  .main-wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--white);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    padding: 22px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--green-mid);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── FORM GRID ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+  @media(max-width: 560px) {
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    .form-grid .full { grid-column: 1/-1; }
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.2px;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: #fafafa;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  .form-group input:focus {
+    border-color: var(--green-mid);
+    box-shadow: 0 0 0 3px rgba(46,132,74,0.12);
+    background: white;
+  }
+  .form-group input.error { border-color: var(--red); }
+
+  .hint {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* ── RESULTS ── */
+  .results-card {
+    background: linear-gradient(135deg, #f0f9f2 0%, #fff 60%);
+    border: 1.5px solid var(--green-mid);
+  }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  @media(max-width: 480px) { .result-grid { grid-template-columns: 1fr; } }
+
+  .result-tile {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .result-tile .r-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .result-tile .r-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .result-tile .r-sub {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Total amount hero */
+  .total-hero {
+    background: var(--green-dark);
+    border-radius: 8px;
+    padding: 16px 20px;
+    text-align: center;
+    color: white;
+    margin-bottom: 12px;
+  }
+  .total-hero .th-label {
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.8;
+    margin-bottom: 6px;
+  }
+  .total-hero .th-amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -1px;
+  }
+  .total-hero .th-words {
+    font-size: 0.72rem;
+    opacity: 0.75;
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* ── BUTTONS ── */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 20px;
+    border-radius: 6px;
+    border: none;
+    font-family: 'Noto Sans Telugu', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .btn-print {
+    background: var(--green-mid);
+    color: white;
+  }
+  .btn-print:hover { background: var(--green-dark); }
+  .btn-clear {
+    background: white;
+    color: var(--text);
+    border: 1.5px solid var(--border);
+  }
+  .btn-clear:hover { background: #f0f0f0; }
+
+  /* ── INFO ROW ── */
+  .info-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    background: var(--gold-light);
+    border: 1px solid #f0d070;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-top: 16px;
+    font-size: 0.76rem;
+    color: #7a5c00;
+  }
+  .info-row svg { flex-shrink: 0; margin-top: 1px; }
+
+  /* ── HIDDEN (shows on print) ── */
+  .printable-invoice { display: none; }
+
+  /* ══════════════════════════════════════════
+     THERMAL PRINT STYLES
+  ══════════════════════════════════════════ */
+  @media print {
+    /* Hide everything on body first via body children */
+    body > *:not(.printable-invoice) {
+      display: none !important;
+    }
+
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: white !important;
+      width: auto !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    @page {
+      size: 80mm auto;
+      margin: 0;
+    }
+
+    .printable-invoice {
+      display: block !important;
+      visibility: visible !important;
+      position: static !important;
+      width: 302px !important;
+      max-width: 302px !important;
+      margin: 0 !important;
+      padding: 8px 10px !important;
+      font-family: 'Courier New', Courier, monospace !important;
+      font-size: 10px !important;
+      color: #000 !important;
+      background: white !important;
+      line-height: 1.45 !important;
+    }
+
+    .printable-invoice * {
+      visibility: visible !important;
+      color: #000 !important;
+      background: transparent !important;
+    }
+
+    .p-header {
+      text-align: center !important;
+      border-bottom: 1px dashed #000 !important;
+      padding-bottom: 6px !important;
+      margin-bottom: 6px !important;
+    }
+    .p-header h1 {
+      font-size: 14px !important;
+      font-weight: bold !important;
+      letter-spacing: 1px !important;
+      margin: 0 2px !important;
+    }
+    .p-header h2 {
+      font-size: 10px !important;
+      font-weight: normal !important;
+      margin: 2px 0 5px !important;
+    }
+    .p-meta { font-size: 9px !important; }
+    .p-meta p { margin: 1px 0 !important; }
+
+    .p-section {
+      border-bottom: 1px dashed #000 !important;
+      padding-bottom: 5px !important;
+      margin-bottom: 5px !important;
+    }
+    .p-section-title {
+      font-size: 10px !important;
+      font-weight: bold !important;
+      text-transform: uppercase !important;
+      margin-bottom: 4px !important;
+    }
+    .p-row {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: baseline !important;
+      font-size: 9px !important;
+      margin: 2px 0 !important;
+      width: 100% !important;
+    }
+    .p-row.bold { font-weight: bold !important; }
+    .p-row.sep {
+      border-top: 1px solid #000 !important;
+      padding-top: 3px !important;
+      margin-top: 3px !important;
+    }
+
+    .p-total-box {
+      border: 1px solid #000 !important;
+      padding: 6px !important;
+      text-align: center !important;
+      margin: 6px 0 !important;
+    }
+    .p-total-label {
+      display: block !important;
+      font-size: 9px !important;
+      font-weight: bold !important;
+      letter-spacing: 0.5px !important;
+    }
+    .p-total-value {
+      font-size: 17px !important;
+      font-weight: bold !important;
+      display: block !important;
+      margin: 2px 0 !important;
+    }
+    .p-total-words {
+      font-size: 8px !important;
+      font-style: italic !important;
+    }
+
+    .p-footer {
+      display: block !important;
+      border-top: 1px dashed #000 !important;
+      padding-top: 5px !important;
+      font-size: 8px !important;
+    }
+    .p-footer p { display: block !important; margin: 1px 0 !important; }
+    .p-section-title { display: block !important; }
+    .p-meta { display: block !important; }
+    .p-header h1, .p-header h2 { display: block !important; }
+    .p-sig {
+      display: block !important;
+      text-align: center !important;
+      margin-top: 10px !important;
+    }
+    .p-sig-line {
+      display: block !important;
+      width: 100px !important;
+      height: 1px !important;
+      background: #000 !important;
+      margin: 18px auto 3px !important;
+    }
+    .p-sig p { display: block !important; }
+    .p-thankyou {
+      display: block !important;
+      text-align: center !important;
+      font-size: 8px !important;
+      margin-top: 8px !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── TOP BANNER ── -->
+<div class="top-banner">
+  <h1>SIDDHARTHA TRADERS</h1>
+  <p>ధాన్యం కొనుగోలు లెక్కలు &nbsp;·&nbsp; Grain Purchase Calculator</p>
+</div>
+
+<div class="main-wrap">
+
+  <!-- ── INPUT FORM ── -->
+  <div class="card">
+    <div class="card-title">&#9654; వివరాలు నమోదు చేయండి</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>70 Kg Bags సంఖ్య</label>
+        <input type="number" id="numBags" min="0" placeholder="0" oninput="calculate()">
+      </div>
+      <div class="form-group">
+        <label>మూట బరువు (Over Kgs)</label>
+        <input type="number" id="overKgs" min="0" max="69" step="0.01" placeholder="0.00" oninput="validateOverKgs(); calculate()">
+        <div class="hint">Max 69 kg</div>
+      </div>
+      <div class="form-group">
+        <label>నిఖరం Rate (₹)</label>
+        <input type="number" id="ratePerNikaram" min="0" step="0.01" placeholder="0.00" oninput="calculate()">
+      </div>
+    </div>
+
+    <div class="info-row">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b8860b" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>1 నిఖరం = 77.5 Kg &nbsp;|&nbsp; ప్రతి బస్తాకి 1 Kg పాకింగ్ తీసివేత &nbsp;|&nbsp; Over Kgs నుండి 1 Kg తీసివేత</span>
+    </div>
+  </div>
+
+  <!-- ── RESULTS ── -->
+  <div class="card results-card" id="resultsCard" style="display:none">
+    <div class="card-title">&#9654; పేమెంట్ వివరములు</div>
+
+    <div class="result-grid">
+      <div class="result-tile">
+        <div class="r-label">నికర బరువు</div>
+        <div class="r-value" id="res-netWeight">0.00 Kg</div>
+        <div class="r-sub" id="res-netFormula"></div>
+      </div>
+      <div class="result-tile">
+        <div class="r-label">మొత్తం నిఖరములు</div>
+        <div class="r-value" id="res-totalNikarams">0.000</div>
+        <div class="r-sub" id="res-nikarFormula"></div>
+      </div>
+      <div class="result-tile">
+        <div class="r-label">పూర్తి నిఖరాలు</div>
+        <div class="r-value" id="res-wholeNikarams">0</div>
+        <div class="r-sub">× 77.5 Kg</div>
+      </div>
+      <div class="result-tile">
+        <div class="r-label">మిగిలిన కిలోలు</div>
+        <div class="r-value" id="res-remainingKgs">0.00 Kg</div>
+        <div class="r-sub">దశాంశ భాగం × 77.5</div>
+      </div>
+    </div>
+
+    <div class="total-hero">
+      <div class="th-label">Total Amount Payable</div>
+      <div class="th-amount" id="res-totalAmount">₹ 0.00</div>
+      <div class="th-words" id="res-amountWords"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-print" onclick="handlePrint()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print Receipt
+      </button>
+      <button class="btn btn-clear" onclick="handleClear()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.99"/></svg>
+        Clear Form
+      </button>
+    </div>
+  </div>
+
+</div><!-- /main-wrap -->
+
+
+<!-- ══════════════════════════════════════════
+     THERMAL PRINTABLE INVOICE
+     (hidden on screen, appears only on print)
+══════════════════════════════════════════ -->
+<div class="printable-invoice" id="printableInvoice">
+
+  <div class="p-header">
+    <h1>SIDDHARTHA TRADERS</h1>
+    <h2>PURCHASE RECEIPT</h2>
+    <div class="p-meta">
+      <p>Receipt: <strong id="p-receiptNo"></strong></p>
+      <p>Date: <strong id="p-date"></strong></p>
+    </div>
+  </div>
+
+  <div class="p-section">
+    <div class="p-section-title">Purchase Details</div>
+    <div class="p-row"><span>70 Kg Bags</span><span id="p-bags"></span></div>
+    <div class="p-row"><span>Over Kgs</span><span id="p-overKgs"></span></div>
+    <div class="p-row"><span>Packing Deduction</span><span id="p-packDed"></span></div>
+    <div class="p-row"><span>Over Kg Deduction</span><span id="p-overDed"></span></div>
+    <div class="p-row bold sep"><span>Net Weight</span><span id="p-netWeight"></span></div>
+  </div>
+
+  <div class="p-section">
+    <div class="p-section-title">Calculation</div>
+    <div class="p-row"><span>Rate / Nikar</span><span id="p-rate"></span></div>
+    <div class="p-row"><span>Total Nikarams</span><span id="p-totalNikarams"></span></div>
+    <div class="p-row"><span>Whole Nikharams</span><span id="p-wholeNikarams"></span></div>
+    <div class="p-row"><span>Remaining Kgs</span><span id="p-remainKgs"></span></div>
+  </div>
+
+  <div class="p-total-box">
+    <div class="p-total-label">TOTAL AMOUNT PAYABLE</div>
+    <span class="p-total-value" id="p-totalAmount"></span>
+    <div class="p-total-words" id="p-words"></div>
+  </div>
+
+  <div class="p-footer">
+    <strong>Terms:</strong>
+    <p>1. 1 Nikar = 77.5 Kg</p>
+    <p>2. 1 Kg deducted per bag (packing)</p>
+    <p>3. 1 Kg deducted from over kgs (if any)</p>
+    <p>4. Computer-generated receipt</p>
+
+    <div class="p-sig">
+      <div class="p-sig-line"></div>
+      <p>Authorized Signature</p>
+      <p>Siddhartha Traders</p>
+    </div>
+    <div class="p-thankyou">*** Thank You ***</div>
+  </div>
+
+</div><!-- /printable-invoice -->
+
+
+<script>
+const NIKAR_KG = 77.5;
+
+function getValues() {
+  return {
+    bags: Math.max(0, Number(document.getElementById('numBags').value) || 0),
+    over: Math.max(0, Math.min(69, Number(document.getElementById('overKgs').value) || 0)),
+    rate: Math.max(0, Number(document.getElementById('ratePerNikaram').value) || 0)
+  };
+}
+
+function validateOverKgs() {
+  const el = document.getElementById('overKgs');
+  let v = Number(el.value);
+  if (v > 69) { el.value = 69; }
+  if (v < 0)  { el.value = 0; }
+}
+
+function calculate() {
+  const { bags, over, rate } = getValues();
+  const resultsCard = document.getElementById('resultsCard');
+
+  if (rate <= 0) { resultsCard.style.display = 'none'; return; }
+  resultsCard.style.display = 'block';
+
+  // Weights
+  const bagsNet  = (bags * 70) - bags;          // 1 kg packing per bag
+  const overNet  = over > 0 ? over - 1 : 0;     // 1 kg deduction from over kgs
+  const netWeight = bagsNet + overNet;
+
+  // Nikarams
+  const totalNikarams = netWeight / NIKAR_KG;
+  const whole = Math.floor(totalNikarams);
+  const frac  = totalNikarams - whole;
+  const remKgs = frac * NIKAR_KG;
+
+  // Amount
+  const amount = totalNikarams * rate;
+  const amtFmt = amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  // Screen update
+  document.getElementById('res-netWeight').textContent      = netWeight.toFixed(2) + ' Kg';
+  document.getElementById('res-netFormula').textContent     = `(${bags}×70 - ${bags}) + ${overNet} kg`;
+  document.getElementById('res-totalNikarams').textContent  = totalNikarams.toFixed(3);
+  document.getElementById('res-nikarFormula').textContent   = `${netWeight.toFixed(2)} ÷ 77.5`;
+  document.getElementById('res-wholeNikarams').textContent  = whole;
+  document.getElementById('res-remainingKgs').textContent   = remKgs.toFixed(2) + ' Kg';
+  document.getElementById('res-totalAmount').textContent    = '₹ ' + amtFmt;
+  document.getElementById('res-amountWords').textContent    = numberToWords(amount);
+
+  // Populate print fields
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const dateStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+  const receiptNo = `ST-${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+
+  document.getElementById('p-receiptNo').textContent   = receiptNo;
+  document.getElementById('p-date').textContent        = dateStr;
+  document.getElementById('p-bags').textContent        = bags + ' bags';
+  document.getElementById('p-overKgs').textContent     = over + ' Kg';
+  document.getElementById('p-packDed').textContent     = '- ' + bags + ' Kg';
+  document.getElementById('p-overDed').textContent     = over > 0 ? '- 1 Kg' : '0 Kg';
+  document.getElementById('p-netWeight').textContent   = netWeight.toFixed(2) + ' Kg';
+  document.getElementById('p-rate').textContent        = '₹ ' + rate.toLocaleString('en-IN');
+  document.getElementById('p-totalNikarams').textContent = totalNikarams.toFixed(3);
+  document.getElementById('p-wholeNikarams').textContent = whole + ' × 77.5 Kg';
+  document.getElementById('p-remainKgs').textContent   = remKgs.toFixed(2) + ' Kg';
+  document.getElementById('p-totalAmount').textContent = '₹ ' + amtFmt;
+  document.getElementById('p-words').textContent       = numberToWords(amount);
+}
+
+function handleClear() {
+  ['numBags','overKgs','ratePerNikaram'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('resultsCard').style.display = 'none';
+}
+
+function handlePrint() {
+  const { bags, over, rate } = getValues();
+  if (rate <= 0) { alert('Please enter a Rate first.'); return; }
+
+  const bagsNet       = (bags * 70) - bags;
+  const overNet       = over > 0 ? over - 1 : 0;
+  const netWeight     = bagsNet + overNet;
+  const totalNikarams = netWeight / NIKAR_KG;
+  const whole         = Math.floor(totalNikarams);
+  const remKgs        = (totalNikarams - whole) * NIKAR_KG;
+  const amount        = totalNikarams * rate;
+  const amtFmt        = amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const dateStr   = pad(now.getDate()) + '-' + pad(now.getMonth()+1) + '-' + now.getFullYear();
+  const receiptNo = 'ST-' + now.getFullYear() + pad(now.getMonth()+1) + pad(now.getDate()) + '-' + pad(now.getHours()) + pad(now.getMinutes());
+  const wordsStr  = numberToWords(amount);
+
+  const css = `
+    @page { size: 80mm auto; margin: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11px; color: #000; background: #fff;
+      width: 76mm; padding: 4mm 3mm; line-height: 1.5;
+    }
+    .c  { text-align: center; }
+    .b  { font-weight: bold; }
+    .s  { font-size: 9px; }
+    .xs { font-size: 8px; }
+    .lg { font-size: 18px; }
+    .dash { border-top: 1px dashed #000; margin: 5px 0; }
+    .sol  { border-top: 1px solid  #000; margin: 3px 0; }
+    .dbl  { border-top: 3px double #000; margin: 5px 0; }
+    .row  { display: flex; justify-content: space-between; align-items: baseline; margin: 2px 0; }
+    .row .l { flex: 1; }
+    .row .v { text-align: right; white-space: nowrap; margin-left: 6px; }
+    .ind .l { padding-left: 10px; }
+    .sh  { font-weight: bold; font-size: 10px; letter-spacing: .5px; margin: 5px 0 3px; text-transform: uppercase; }
+    .tbox { border: 1.5px solid #000; padding: 6px; text-align: center; margin: 6px 0; }
+    .tbox .tl { font-size: 9px; font-weight: bold; letter-spacing: .8px; }
+    .tbox .ta { font-size: 22px; font-weight: bold; margin: 3px 0; letter-spacing: -.5px; }
+    .tbox .tw { font-size: 8px; font-style: italic; line-height: 1.4; margin-top: 2px; }
+    .sigline  { border-top: 1px solid #000; width: 50mm; margin: 16px auto 3px; }
+  `;
+
+  const body = `
+    <div class="c b lg">SIDDHARTHA TRADERS</div>
+    <div class="c s" style="margin:2px 0 5px">PURCHASE RECEIPT</div>
+    <div class="dash"></div>
+    <div class="row s"><span class="l">Receipt No</span><span class="v b">${receiptNo}</span></div>
+    <div class="row s"><span class="l">Date</span><span class="v">${dateStr}</span></div>
+    <div class="dash"></div>
+
+    <div class="sh">Purchase Details</div>
+    <div class="row"><span class="l">70 Kg Bags</span><span class="v">${bags} bags</span></div>
+    <div class="row"><span class="l">Over Kgs</span><span class="v">${over} Kg</span></div>
+    <div class="row ind s"><span class="l">(-) Packing deduction</span><span class="v">- ${bags} Kg</span></div>
+    <div class="row ind s"><span class="l">(-) Over Kg deduction</span><span class="v">${over > 0 ? '- 1 Kg' : '0 Kg'}</span></div>
+    <div class="sol"></div>
+    <div class="row b"><span class="l">Net Weight</span><span class="v">${netWeight.toFixed(2)} Kg</span></div>
+    <div class="dash"></div>
+
+    <div class="sh">Nikaram Calculation</div>
+    <div class="row"><span class="l">1 Nikar</span><span class="v">= 77.5 Kg</span></div>
+    <div class="row"><span class="l">Total Nikarams</span><span class="v">${totalNikarams.toFixed(4)}</span></div>
+    <div class="row ind s"><span class="l">Whole Nikharams</span><span class="v">${whole} x 77.5</span></div>
+    <div class="row ind s"><span class="l">Remaining Kgs</span><span class="v">${remKgs.toFixed(2)} Kg</span></div>
+    <div class="row"><span class="l">Rate / Nikar</span><span class="v">Rs. ${Number(rate).toLocaleString('en-IN')}</span></div>
+    <div class="dash"></div>
+
+    <div class="tbox">
+      <div class="tl">TOTAL AMOUNT PAYABLE</div>
+      <div class="ta">Rs. ${amtFmt}</div>
+      <div class="tw">${wordsStr}</div>
+    </div>
+
+    <div class="xs" style="margin:4px 0 0"><span class="b">Terms:</span> 1 Nikar=77.5Kg | 1Kg/bag packing | 1Kg from over kgs | Computer generated receipt</div>
+    <div class="dash" style="margin-top:8px"></div>
+    <div class="sigline"></div>
+    <div class="c s">Authorized Signature</div>
+    <div class="c s b" style="margin-top:2px">Siddhartha Traders</div>
+    <div class="dbl" style="margin-top:8px"></div>
+    <div class="c xs" style="margin-top:4px">*** Thank You ***</div>
+    <script>
+      window.onload = function() {
+        window.print();
+        window.onafterprint = function() { window.close(); };
+      };
+    <\/script>
+  `;
+
+  const w = window.open('', '_blank', 'width=420,height=650,toolbar=0,menubar=0,scrollbars=1');
+  if (!w) { alert('Please allow popups for this page to print.'); return; }
+  w.document.open();
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Receipt ' + receiptNo + '</title><style>' + css + '</style></head><body>' + body + '</body></html>');
+  w.document.close();
+}
+
+/* ── Number to Words (Indian system) ── */
+function numberToWords(num) {
+  const rupees = Math.floor(num);
+  const paise  = Math.round((num - rupees) * 100);
+  let w = '';
+  if (rupees > 0) w = convertNum(rupees) + 'Rupees ';
+  if (paise  > 0) w += (w ? 'and ' : '') + convertNum(paise) + 'Paise';
+  return (w || 'Zero') + ' Only';
+}
+
+function convertNum(n) {
+  const a = ['','one ','two ','three ','four ','five ','six ','seven ','eight ','nine ',
+             'ten ','eleven ','twelve ','thirteen ','fourteen ','fifteen ','sixteen ',
+             'seventeen ','eighteen ','nineteen '];
+  const b = ['','','twenty ','thirty ','forty ','fifty ','sixty ','seventy ','eighty ','ninety '];
+  let w = '';
+  if (n >= 10000000) { w += convertNum(Math.floor(n/10000000)) + 'crore '; n %= 10000000; }
+  if (n >= 100000)   { w += convertNum(Math.floor(n/100000))   + 'lakh ';  n %= 100000; }
+  if (n >= 1000)     { w += convertNum(Math.floor(n/1000))     + 'thousand '; n %= 1000; }
+  if (n >= 100)      { w += convertNum(Math.floor(n/100))      + 'hundred ';
+                       n %= 100; if (n > 0) w += 'and '; }
+  if (n > 0) {
+    if (n < 20) w += a[n];
+    else { w += b[Math.floor(n/10)]; if (n%10) w += a[n%10]; }
+  }
+  return w;
+}
+</script>
+</body>
+</html>
+
