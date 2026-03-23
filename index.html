@@ -545,6 +545,16 @@
 
 
 <script>
+/* ── KPC307-UEWB PRINTER SPECS (from config printout) ──────────────
+   Print Width Dots : 576  → 72mm printable width
+   Codepage         : CP437 → use 'Rs.' not rupee symbol (not CP437)
+   Command Mode     : EPSON ESC/POS
+   BT Name          : KPC307-UEWB-3BD0
+   BT Addr          : 18:3F:72:35:3B:D0
+   TCP Port         : 9100  (WiFi printing possible on same network)
+   WiFi AP IP       : 192.168.223.1 (printer hotspot)
+   Cutter           : Yes  → GS 56 41 03
+─────────────────────────────────────────────────────────────────── */
 const NIKAR_KG = 77.5;
 
 /* ═══════════════════════════════════════════
@@ -913,7 +923,7 @@ function handlePrint() {
   const wordsStr  = numberToWords(amount);
 
   const css = `
-    @page { size: 80mm auto; margin: 0; }
+    @page { size: 80mm auto; margin: 0mm 4mm; }  /* KPC307: 576 dots = 72mm printable */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Courier New', Courier, monospace;
@@ -935,7 +945,7 @@ function handlePrint() {
     .sh  { font-weight: bold; font-size: 10px; letter-spacing: .5px; margin: 5px 0 3px; text-transform: uppercase; }
     .tbox { border: 1.5px solid #000; padding: 6px; text-align: center; margin: 6px 0; }
     .tbox .tl { font-size: 9px; font-weight: bold; letter-spacing: .8px; }
-    .tbox .ta { font-size: 22px; font-weight: bold; margin: 3px 0; letter-spacing: -.5px; }
+    .tbox .ta { font-size: 24px; font-weight: bold; margin: 3px 0; letter-spacing: -.5px; }
     .tbox .tw { font-size: 8px; font-style: italic; line-height: 1.4; margin-top: 2px; }
     .sigline  { border-top: 1px solid #000; width: 50mm; margin: 16px auto 3px; }
   `;
