@@ -1,0 +1,8 @@
+{
+  "appId": "com.grainwise.purchase",
+  "appName": "Grainwise",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false
+  }
+}
