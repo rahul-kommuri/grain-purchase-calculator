@@ -43,14 +43,17 @@
         <footer class="desktop-footer">Grainwise · Local-first, with cloud sync when connected.</footer>
       </main>
 
-      <nav class="bottom-nav" aria-label="Primary">
-        <a href="#/dashboard" data-route="dashboard"><span aria-hidden="true">⌂</span><small>Home</small></a>
-        <a class="bottom-add" href="#/purchase/new" data-route="purchase" aria-label="New purchase"><span aria-hidden="true">＋</span></a>
-        <a href="#/purchases" data-route="purchases"><span aria-hidden="true">▤</span><small>History</small></a>
-        <button id="more-button" type="button" aria-expanded="false"><span aria-hidden="true">•••</span><small>More</small></button>
-      </nav>
-      <div class="more-menu" id="more-menu" hidden>
-        <a href="#/farmers">Farmers</a><a href="#/grains">Grains</a><a href="#/reports">Reports</a><a href="#/settings">Settings</a>
+      <div class="floating-navigation">
+        <nav class="floating-menu" id="floating-menu" aria-label="Primary" hidden>
+          <a href="#/dashboard" data-route="dashboard"><span aria-hidden="true">⌂</span><small>Dashboard</small></a>
+          <a href="#/purchase/new" data-route="purchase"><span aria-hidden="true">＋</span><small>New purchase</small></a>
+          <a href="#/purchases" data-route="purchases"><span aria-hidden="true">▤</span><small>History</small></a>
+          <a href="#/farmers" data-route="farmers"><span aria-hidden="true">♧</span><small>Farmers</small></a>
+          <a href="#/grains" data-route="grains"><span aria-hidden="true">❋</span><small>Grains</small></a>
+          <a href="#/reports" data-route="reports"><span aria-hidden="true">▥</span><small>Reports</small></a>
+          <a href="#/settings" data-route="settings"><span aria-hidden="true">⚙</span><small>Settings</small></a>
+        </nav>
+        <button class="floating-menu-button" id="floating-menu-button" type="button" aria-label="Open navigation menu" aria-controls="floating-menu" aria-expanded="false"><span aria-hidden="true">☰</span></button>
       </div>
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>

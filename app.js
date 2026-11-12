@@ -115,19 +115,14 @@
   }
   function renderDashboard() {
     const active = activePurchases();
-    const now = new Date();
-    const todayKey = localDateKey(now);
-    const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const today = calc().summarizePurchases(active.filter((purchase) => purchase.purchaseDate.slice(0, 10) === todayKey), data.payments);
-    const month = calc().summarizePurchases(active.filter((purchase) => purchase.purchaseDate.slice(0, 7) === monthKey), data.payments);
-    const outstanding = calc().summarizePurchases(active, data.payments).balancePaise;
+    const overall = calc().summarizePurchases(active, data.payments);
+    const outstanding = overall.balancePaise;
     const recent = [...data.purchases].sort((a, b) => b.purchaseDate.localeCompare(a.purchaseDate)).slice(0, 10);
     const firstUse = data.purchases.length === 0 && data.farmers.length === 0;
     app.innerHTML = `${pageHeading("PROCUREMENT OVERVIEW", "Dashboard", "")}
       ${!data.settings.shopName ? `<div class="notice notice-warm"><span aria-hidden="true">✦</span><div><strong>Shop name needed</strong><span>Add a name to print on receipts.</span></div><a class="button button-outline" href="#/settings">Settings</a></div>` : ""}
       ${firstUse ? `<section class="panel welcome-panel"><div class="welcome-copy"><p class="eyebrow">WELCOME TO GRAINWISE</p><h2>Ready for your first purchase?</h2><div class="welcome-actions"><a class="button button-primary" href="#/purchase/new">New purchase</a><button type="button" class="text-button" data-action="load-demo">Load sample data</button></div></div></section>` : ""}
-      <section class="section-block"><div class="section-title"><div><h2>Today</h2></div></div><div class="metric-grid four">${metric("Purchases", String(today.count))}${metric("Total amount", calc().formatMoney(today.amountPaise))}${metric("Paid", calc().formatMoney(today.paidPaise))}${metric("Balance", calc().formatMoney(today.balancePaise))}</div></section>
-      <section class="section-block"><div class="section-title"><div><h2>This month</h2></div></div><div class="metric-grid four">${metric("Purchases", String(month.count))}${metric("Total amount", calc().formatMoney(month.amountPaise))}${metric("Paid", calc().formatMoney(month.paidPaise))}${metric("Balance", calc().formatMoney(month.balancePaise))}</div></section>
+      <section class="section-block"><div class="section-title"><div><h2>Overall statistics</h2></div></div><div class="overview-card"><div class="overview-stat"><span>Purchases</span><strong>${overall.count}</strong></div><div class="overview-stat"><span>Total amount</span><strong>${calc().formatMoney(overall.amountPaise)}</strong></div><div class="overview-stat"><span>Paid</span><strong>${calc().formatMoney(overall.paidPaise)}</strong></div><div class="overview-stat"><span>Balance</span><strong>${calc().formatMoney(overall.balancePaise)}</strong></div></div></section>
       <section class="pending-card"><div><span class="pending-kicker">OUTSTANDING PAYMENTS</span><strong>${calc().formatMoney(outstanding)}</strong></div><a class="button button-outline" href="#/reports?type=pending">View payments <span aria-hidden="true">→</span></a></section>
       <section class="panel"><div class="panel-heading"><div><h2>Recent purchases</h2></div><a class="text-link" href="#/purchases">View history →</a></div>
       ${recent.length ? `<div class="table-wrap"><table><thead><tr><th>RECEIPT</th><th>DATE</th><th>FARMER</th><th>GRAIN</th><th>PAYABLE WEIGHT</th><th>NIKARAMS</th><th>AMOUNT</th><th>PAYMENT</th></tr></thead><tbody>${recent.map((purchase) => `<tr data-href="#/purchases/${encodeURIComponent(purchase.purchaseId)}"><td><a class="receipt-link" href="#/purchases/${encodeURIComponent(purchase.purchaseId)}">${escapeHTML(purchase.receiptNumber)}</a></td><td>${escapeHTML(fmtDate(purchase.purchaseDate, true))}</td><td>${escapeHTML(purchase.farmerName)}</td><td>${escapeHTML(purchase.grainName)}</td><td>${calc().formatWeightKg(purchase.payableWeightG)}</td><td>${formatPurchaseNikarams(purchase)}</td><td class="money-cell">${calc().formatMoney(purchase.totalPaise)}</td><td>${statusBadge(payStatus(purchase))}</td></tr>`).join("")}</tbody></table></div>` : emptyBlock("No purchases yet", "New purchases will appear here after you record them.", `<a class="button button-outline" href="#/purchase/new">Record first purchase</a>`)}</section>`;
@@ -656,13 +651,9 @@
       link.classList.toggle("is-active", selected);
       if (selected) link.setAttribute("aria-current", "page"); else link.removeAttribute("aria-current");
     });
-    const moreRoutes = ["farmers", "farmers-detail", "grains", "reports", "settings"];
-    const moreActive = moreRoutes.includes(currentRoute.name);
-    document.querySelector("#more-button").classList.toggle("is-active", moreActive);
-    if (moreActive) document.querySelector("#more-button").setAttribute("aria-current", "page");
-    else document.querySelector("#more-button").removeAttribute("aria-current");
-    document.querySelector("#more-menu").hidden = true;
-    document.querySelector("#more-button").setAttribute("aria-expanded", "false");
+    document.querySelector("#floating-menu").hidden = true;
+    document.querySelector("#floating-menu-button").setAttribute("aria-expanded", "false");
+    document.querySelector("#floating-menu-button").setAttribute("aria-label", "Open navigation menu");
     switch (currentRoute.name) {
       case "purchase": renderPurchase(); break;
       case "purchases": renderHistory(); break;
@@ -908,14 +899,17 @@
     const rowLink = event.target.closest("tr[data-href]");
     if (rowLink && !event.target.closest("a, button")) location.hash = rowLink.dataset.href;
     action(event);
-    if (event.target.closest("#more-button")) {
-      const menu = document.querySelector("#more-menu");
+    if (event.target.closest("#floating-menu-button")) {
+      const menu = document.querySelector("#floating-menu");
       const open = menu.hidden;
       menu.hidden = !open;
-      document.querySelector("#more-button").setAttribute("aria-expanded", String(open));
-    } else if (!event.target.closest("#more-menu")) {
-      document.querySelector("#more-menu").hidden = true;
-      document.querySelector("#more-button").setAttribute("aria-expanded", "false");
+      const button = document.querySelector("#floating-menu-button");
+      button.setAttribute("aria-expanded", String(open));
+      button.setAttribute("aria-label", open ? "Close navigation menu" : "Open navigation menu");
+    } else if (!event.target.closest("#floating-menu")) {
+      document.querySelector("#floating-menu").hidden = true;
+      document.querySelector("#floating-menu-button").setAttribute("aria-expanded", "false");
+      document.querySelector("#floating-menu-button").setAttribute("aria-label", "Open navigation menu");
     }
   });
   window.addEventListener("hashchange", () => { refresh(); window.scrollTo(0, 0); });

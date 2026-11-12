@@ -47,20 +47,19 @@ button:disabled { cursor: not-allowed; opacity: .48; }
 .brand-mark { display: grid; width: 31px; height: 31px; place-items: center; color: #fff; background: var(--green); border-radius: 9px; font-size: 17px; }
 .brand-light { color: var(--green); font-weight: 500; }
 .sidebar { display: none; }
-.main-content { min-height: calc(100vh - 58px); padding-bottom: calc(128px + env(safe-area-inset-bottom)); }
+.main-content { min-height: calc(100vh - 58px); padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
 .topbar { display: none; }
 .page-content { width: min(100%, 1120px); margin: 0 auto; padding: 22px 15px 25px; }
 .desktop-footer { display: none; }
-.bottom-nav { position: fixed; inset: auto 0 0; z-index: 5; display: grid; height: calc(62px + env(safe-area-inset-bottom)); grid-template-columns: repeat(4, 1fr); align-items: center; padding: 4px 8px env(safe-area-inset-bottom); background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -4px 16px #152d5410; }
-.bottom-nav a, .bottom-nav button { display: flex; min-height: 48px; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted); background: transparent; border: 0; border-radius: 9px; font-size: 18px; }
-.bottom-nav a.is-active, .bottom-nav button[aria-expanded="true"], .bottom-nav button.is-active { color: var(--green); }
-.bottom-nav small { font-size: 9px; font-weight: 600; }
-.bottom-nav .bottom-add { width: 47px; height: 47px; min-height: 47px; justify-self: center; color: #fff; background: var(--green); border-radius: 15px; box-shadow: 0 3px 8px color-mix(in srgb, var(--green) 30%, transparent); font-size: 25px; }
-.bottom-nav .bottom-add.is-active { color: #fff; background: var(--green-strong); }
-.more-menu { position: fixed; right: 12px; bottom: calc(73px + env(safe-area-inset-bottom)); z-index: 6; display: grid; width: min(220px, calc(100vw - 24px)); padding: 7px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 35px #1a35603b; }
-.more-menu[hidden] { display: none; }
-.more-menu a { display: flex; min-height: 44px; align-items: center; padding: 0 12px; border-radius: 8px; font-size: 13px; }
-.more-menu a:hover { background: var(--green-soft); }
+.floating-navigation { position: fixed; left: 15px; bottom: calc(15px + env(safe-area-inset-bottom)); z-index: 6; display: grid; justify-items: start; gap: 10px; }
+.floating-menu-button { display: grid; width: 54px; height: 54px; place-items: center; color: #fff; background: var(--green); border: 0; border-radius: 50%; box-shadow: 0 8px 24px color-mix(in srgb, var(--green) 38%, transparent); font-size: 22px; transition: transform .18s, background .18s; }
+.floating-menu-button[aria-expanded="true"] { background: var(--green-strong); transform: rotate(90deg); }
+.floating-menu { display: grid; width: min(210px, calc(100vw - 30px)); max-height: calc(100vh - 150px); gap: 4px; padding: 8px; overflow-y: auto; background: color-mix(in srgb, var(--surface) 96%, transparent); border: 1px solid var(--line); border-radius: 15px; box-shadow: 0 14px 38px #152d5445; backdrop-filter: blur(12px); }
+.floating-menu[hidden] { display: none; }
+.floating-menu a { display: flex; min-height: 43px; align-items: center; gap: 10px; padding: 0 11px; color: var(--muted); border-radius: 10px; font-size: 18px; }
+.floating-menu a span { display: grid; width: 25px; place-items: center; }
+.floating-menu a small { font-size: 12px; font-weight: 650; }
+.floating-menu a:hover, .floating-menu a.is-active { color: var(--green-strong); background: var(--green-soft); }
 .storage-label { display: none; }
 
 .page-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin: 3px 0 20px; }
@@ -106,6 +105,12 @@ h2 { margin: 0; font-size: 15px; letter-spacing: -.2px; }
 .metric-card .metric-label { color: var(--muted); font-size: 10px; font-weight: 550; }
 .metric-card strong { overflow-wrap: anywhere; font-size: clamp(14px, 4vw, 19px); letter-spacing: -.4px; }
 .metric-card small { color: var(--muted); font-size: 9px; }
+.overview-card { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 2px 6px #152d5408; }
+.overview-stat { display: grid; min-height: 86px; align-content: space-between; gap: 8px; padding: 13px; }
+.overview-stat:nth-child(odd) { border-right: 1px solid var(--line); }
+.overview-stat:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
+.overview-stat span { color: var(--muted); font-size: 10px; font-weight: 550; }
+.overview-stat strong { overflow-wrap: anywhere; font-size: clamp(15px, 4vw, 20px); letter-spacing: -.4px; }
 .pending-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; padding: 16px; background: var(--green-soft); border: 1px solid color-mix(in srgb, var(--green) 15%, var(--line)); border-radius: 12px; }
 .pending-card > div { display: grid; gap: 4px; }
 .pending-card strong { font-size: clamp(18px, 5vw, 23px); letter-spacing: -.5px; }
@@ -250,7 +255,7 @@ tbody tr[data-href]:hover { background: var(--green-soft); }
 }
 
 @media (min-width: 700px) {
-  .mobile-header, .bottom-nav, .more-menu { display: none; }
+  .mobile-header, .floating-navigation { display: none; }
   .app-shell { min-height: 100vh; }
   .sidebar { position: fixed; inset: 0 auto 0 0; z-index: 4; display: flex; width: 225px; flex-direction: column; padding: 22px 15px 15px; background: var(--surface); border-right: 1px solid var(--line); }
   .desktop-brand { padding: 0 7px; font-size: 19px; }
@@ -279,6 +284,9 @@ tbody tr[data-href]:hover { background: var(--green-soft); }
   .desktop-footer { display: block; padding: 0 28px 18px; color: var(--muted); font-size: 9px; }
   .metric-grid.five { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
   .metric-grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .overview-card { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .overview-stat { min-height: 94px; padding: 14px; border-right: 1px solid var(--line); border-bottom: 0 !important; }
+  .overview-stat:last-child { border-right: 0; }
   .metric-card { min-height: 94px; padding: 12px; }
   .section-block { margin: 19px 0; }
   .panel { padding: 17px; }
