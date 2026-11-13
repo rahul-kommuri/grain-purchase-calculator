@@ -9,3 +9,4 @@ android/app/build/
 
 # Local Netlify folder
 .netlify
+.android-sdk/

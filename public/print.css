@@ -4,7 +4,7 @@
 html, body { width: auto; min-width: 0; margin: 0; padding: 0; color: #000 !important; background: #fff !important; font-family: Arial, Helvetica, sans-serif; font-size: 11pt; }
 body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .app-shell, .toast, #dialog-root { display: none !important; }
-.receipt { position: relative; width: 186mm; max-width: 100%; margin: 0 auto; color: #000; background: #fff; font-family: "Courier New", Courier, monospace; font-size: 11pt; line-height: 1.35; }
+.receipt { position: relative; width: 186mm; max-width: 100%; margin: 0 auto; color: #000; background: #fff; font-family: "Courier New", Courier, monospace; font-size: 11pt; font-weight: 700; line-height: 1.35; }
 .receipt p { margin: 1.5mm 0; }
 .receipt-header { margin-bottom: 3mm; text-align: center; }
 .receipt-header h1 { margin: 0 0 1mm; font-size: 20pt; font-weight: 800; letter-spacing: .4mm; text-transform: uppercase; }
@@ -14,7 +14,7 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .receipt-section h2 { margin: 0 0 2.5mm; font-size: 11pt; font-weight: 800; }
 .receipt-row { display: flex; justify-content: space-between; gap: 4mm; margin: 1.7mm 0; }
 .receipt-row > span { flex: 1; min-width: 0; }
-.receipt-row strong { max-width: 58%; font-weight: 400; text-align: right; overflow-wrap: anywhere; }
+.receipt-row strong { max-width: 58%; font-weight: 700; text-align: right; overflow-wrap: anywhere; }
 .receipt-meta .receipt-row:first-child strong { font-weight: 800; }
 .receipt-primary-row { margin-top: 2.5mm; font-size: 12pt; }
 .receipt-indent { padding-left: 5mm; font-size: 10pt; }

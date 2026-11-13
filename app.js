@@ -13,6 +13,7 @@
   let farmerSearch = "";
   let purchaseFormDirty = false;
   let syncStateUnsubscribe;
+  let accountStateUnsubscribe;
   let historyFilters = { status: "ACTIVE", payment: "all", farmer: "all", grain: "all", from: "", to: "" };
   let historyPreset = "all";
   let currentRoute = {};
@@ -113,6 +114,13 @@
   function formField(label, control, hint = "") {
     return `<label class="form-field">${escapeHTML(label)}${control}${hint ? `<small>${escapeHTML(hint)}</small>` : ""}</label>`;
   }
+  function purchaseListRows(records) {
+    return `<div class="record-list">${records.map((purchase) => `<a class="record-row" href="#/purchases/${encodeURIComponent(purchase.purchaseId)}">
+      <span class="record-main"><strong>${escapeHTML(purchase.farmerName)}</strong><small>${escapeHTML(purchase.receiptNumber)} · ${escapeHTML(purchase.grainName)} · ${escapeHTML(fmtDate(purchase.purchaseDate))}</small></span>
+      <span class="record-value"><strong>${calc().formatMoney(purchase.totalPaise)}</strong><small>${escapeHTML(payStatus(purchase))}</small></span>
+      <span class="record-chevron" aria-hidden="true">›</span>
+    </a>`).join("")}</div>`;
+  }
   function renderDashboard() {
     const active = activePurchases();
     const overall = calc().summarizePurchases(active, data.payments);
@@ -125,7 +133,7 @@
       <section class="section-block"><div class="section-title"><div><h2>Overall statistics</h2></div></div><div class="overview-card"><div class="overview-stat"><span>Purchases</span><strong>${overall.count}</strong></div><div class="overview-stat"><span>Total amount</span><strong>${calc().formatMoney(overall.amountPaise)}</strong></div><div class="overview-stat"><span>Paid</span><strong>${calc().formatMoney(overall.paidPaise)}</strong></div><div class="overview-stat"><span>Balance</span><strong>${calc().formatMoney(overall.balancePaise)}</strong></div></div></section>
       <section class="pending-card"><div><span class="pending-kicker">OUTSTANDING PAYMENTS</span><strong>${calc().formatMoney(outstanding)}</strong></div><a class="button button-outline" href="#/reports?type=pending">View payments <span aria-hidden="true">→</span></a></section>
       <section class="panel"><div class="panel-heading"><div><h2>Recent purchases</h2></div><a class="text-link" href="#/purchases">View history →</a></div>
-      ${recent.length ? `<div class="table-wrap"><table><thead><tr><th>RECEIPT</th><th>DATE</th><th>FARMER</th><th>GRAIN</th><th>PAYABLE WEIGHT</th><th>NIKARAMS</th><th>AMOUNT</th><th>PAYMENT</th></tr></thead><tbody>${recent.map((purchase) => `<tr data-href="#/purchases/${encodeURIComponent(purchase.purchaseId)}"><td><a class="receipt-link" href="#/purchases/${encodeURIComponent(purchase.purchaseId)}">${escapeHTML(purchase.receiptNumber)}</a></td><td>${escapeHTML(fmtDate(purchase.purchaseDate, true))}</td><td>${escapeHTML(purchase.farmerName)}</td><td>${escapeHTML(purchase.grainName)}</td><td>${calc().formatWeightKg(purchase.payableWeightG)}</td><td>${formatPurchaseNikarams(purchase)}</td><td class="money-cell">${calc().formatMoney(purchase.totalPaise)}</td><td>${statusBadge(payStatus(purchase))}</td></tr>`).join("")}</tbody></table></div>` : emptyBlock("No purchases yet", "New purchases will appear here after you record them.", `<a class="button button-outline" href="#/purchase/new">Record first purchase</a>`)}</section>`;
+      ${recent.length ? purchaseListRows(recent) : emptyBlock("No purchases yet", "New purchases will appear here after you record them.", `<a class="button button-outline" href="#/purchase/new">Record first purchase</a>`)}</section>`;
   }
 
   function renderPurchase() {
@@ -343,7 +351,7 @@
       </section>
       <section class="panel"><div class="panel-heading"><div><h2>Filtered purchases</h2><p>${records.length} result${records.length === 1 ? "" : "s"} · ${summary.count} active</p></div><button class="text-button" data-action="clear-history">Clear filters</button></div>
         <div class="metric-strip"><span>${summary.count} purchases</span><span>${formatNikaramsTotal(activeFiltered)} Nikarams</span><span>Total ${calc().formatMoney(summary.amountPaise)}</span><span>Paid ${calc().formatMoney(summary.paidPaise)}</span><span>Balance ${calc().formatMoney(summary.balancePaise)}</span></div>
-        ${pageRecords.length ? `<div class="table-wrap"><table class="history-table"><thead><tr><th>RECEIPT</th><th>DATE</th><th>FARMER / VILLAGE</th><th>GRAIN</th><th>WEIGHT</th><th>NIKARAMS</th><th>RATE</th><th>TOTAL</th><th>PAID</th><th>BALANCE</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody>${purchaseRows(pageRecords, true)}</tbody></table></div>` : emptyBlock("No purchases match these filters", "Clear a filter or search for a different record.")}
+        ${pageRecords.length ? purchaseListRows(pageRecords) : emptyBlock("No purchases match these filters", "Clear a filter or search for a different record.")}
         <div class="pagination"><span>Page ${historyPage + 1} of ${pageCount}</span><div><button class="button button-outline button-small" data-action="previous-page" ${historyPage === 0 ? "disabled" : ""}>Previous</button><button class="button button-outline button-small" data-action="next-page" ${historyPage >= pageCount - 1 ? "disabled" : ""}>Next</button></div></div>
       </section>`;
     app.querySelector("#history-search").addEventListener("input", (event) => {
@@ -399,13 +407,13 @@
       .filter((farmer) => `${farmer.farmerName} ${farmer.mobileNumber} ${farmer.village}`.toLocaleLowerCase().includes(search));
     app.innerHTML = `${pageHeading("YOUR PEOPLE", "Farmers", "Profiles from existing records. Enter names directly on new purchases.")}
       <section class="panel"><div class="panel-toolbar"><label class="search-control"><span aria-hidden="true">⌕</span><input id="farmer-search" type="search" value="${escapeHTML(farmerSearch)}" placeholder="Search name, mobile, or village..." aria-label="Search farmers"></label><span class="muted">${visibleFarmers.length} farmer${visibleFarmers.length === 1 ? "" : "s"}</span></div>
-      ${visibleFarmers.length ? `<div class="table-wrap"><table><thead><tr><th>FARMER</th><th>VILLAGE</th><th>MOBILE</th><th>STATUS</th><th>TOTAL PURCHASED</th><th>BALANCE</th><th>ACTIONS</th></tr></thead><tbody>${visibleFarmers.map((farmer) => {
+      ${visibleFarmers.length ? `<div class="record-list">${visibleFarmers.map((farmer) => {
         const records = data.purchases.filter((purchase) => (purchase.farmerId === farmer.farmerId || purchase.farmerName.toLocaleLowerCase() === farmer.farmerName.toLocaleLowerCase()) && purchase.status === "ACTIVE");
         const summary = calc().summarizePurchases(records, data.payments);
         const total = summary.amountPaise;
         const due = summary.balancePaise;
-        return `<tr><td data-label="Farmer"><a class="receipt-link" href="#/farmers/${encodeURIComponent(farmer.farmerId)}">${escapeHTML(farmer.farmerName)}</a></td><td data-label="Village">${escapeHTML(farmer.village || "—")}</td><td data-label="Mobile">${escapeHTML(farmer.mobileNumber || "—")}</td><td data-label="Status">${farmer.isVirtual ? "Purchase records" : statusBadge(farmer.isActive ? "Active" : "Inactive")}</td><td data-label="Total purchased">${calc().formatMoney(total)}</td><td data-label="Balance">${calc().formatMoney(due)}</td><td data-label="Actions">${farmer.isVirtual ? "—" : `<button class="button button-small button-outline" data-action="edit-farmer" data-id="${escapeHTML(farmer.farmerId)}">Edit</button> <button class="button button-small button-outline" data-action="toggle-farmer" data-id="${escapeHTML(farmer.farmerId)}">${farmer.isActive ? "Deactivate" : "Reactivate"}</button>`}</td></tr>`;
-      }).join("")}</tbody></table></div>` : emptyBlock("No farmers found", "Farmer names appear here after purchases are recorded.")}</section>`;
+        return `<a class="record-row" href="#/farmers/${encodeURIComponent(farmer.farmerId)}"><span class="record-main"><strong>${escapeHTML(farmer.farmerName)}</strong><small>${escapeHTML([farmer.village, farmer.mobileNumber].filter(Boolean).join(" · ") || `${records.length} purchase${records.length === 1 ? "" : "s"}`)}</small></span><span class="record-value"><strong>${calc().formatMoney(total)}</strong><small>${due > 0 ? `${calc().formatMoney(due)} due` : "No balance"}</small></span><span class="record-chevron" aria-hidden="true">›</span></a>`;
+      }).join("")}</div>` : emptyBlock("No farmers found", "Farmer names appear here after purchases are recorded.")}</section>`;
     app.querySelector("#farmer-search").addEventListener("input", (event) => {
       farmerSearch = event.target.value;
       const start = event.target.selectionStart;
@@ -435,7 +443,7 @@
     const summary = calc().summarizePurchases(active, data.payments);
     app.innerHTML = `${pageHeading("FARMER STATEMENT", farmer.farmerName, [farmer.village, farmer.mobileNumber].filter(Boolean).join(" · ") || "No contact details", `<button class="button button-outline" data-action="print-farmer" data-id="${escapeHTML(id)}">Print statement</button>`)}
       <div class="metric-grid">${metric("Purchases", String(summary.count))}${metric("Total purchased", calc().formatMoney(summary.amountPaise))}${metric("Paid", calc().formatMoney(summary.paidPaise))}${metric("Balance", calc().formatMoney(summary.balancePaise))}</div>
-      <section class="panel"><div class="panel-heading"><div><h2>Purchase history</h2></div>${farmer.isVirtual ? "" : `<button class="button button-outline" data-action="edit-farmer" data-id="${escapeHTML(id)}">Edit farmer</button>`}</div>
+      <section class="panel"><div class="panel-heading"><div><h2>Purchase history</h2></div>${farmer.isVirtual ? "" : `<div class="row-actions"><button class="button button-outline" data-action="edit-farmer" data-id="${escapeHTML(id)}">Edit farmer</button><button class="button button-outline" data-action="toggle-farmer" data-id="${escapeHTML(id)}">${farmer.isActive ? "Deactivate" : "Reactivate"}</button></div>`}</div>
         ${records.length ? `<div class="table-wrap"><table><thead><tr><th>RECEIPT</th><th>DATE</th><th>FARMER / VILLAGE</th><th>GRAIN</th><th>PAYABLE WEIGHT</th><th>NIKARAMS</th><th>RATE</th><th>TOTAL</th><th>PAID</th><th>BALANCE</th><th>STATUS</th></tr></thead><tbody>${purchaseRows(records)}</tbody></table></div>` : emptyBlock("No purchases for this farmer", "Purchases will appear here after you record them.")}</section>`;
   }
 
@@ -489,6 +497,79 @@
     }));
   }
 
+  async function setupThermalPrinterSettings() {
+    const printer = window.GrainThermalPrinter;
+    const panel = app.querySelector("#thermal-printer-settings");
+    if (!printer || !panel) return;
+    const status = panel.querySelector("#thermal-printer-status");
+    const deviceWrap = panel.querySelector("#thermal-device-wrap");
+    const deviceSelect = panel.querySelector("#thermal-device");
+    const connectButton = panel.querySelector("#thermal-connect");
+    const refreshButton = panel.querySelector("#thermal-refresh");
+    const testButton = panel.querySelector("#thermal-test");
+    const disconnectButton = panel.querySelector("#thermal-disconnect");
+
+    function update(state) {
+      if (!status?.isConnected) return;
+      status.classList.toggle("is-error", Boolean(state.error));
+      status.textContent = state.error
+        ? `Printer issue: ${state.error}`
+        : !state.supported
+          ? "Direct Bluetooth printing is not supported in this browser. Use a recent Chrome browser on Android."
+          : state.connected
+            ? `Connected to ${state.name || "Bluetooth printer"}.`
+            : state.name
+              ? `${state.name} is saved but not connected.`
+              : printer.isNative
+                ? "Pair the printer in Android settings, select it below, then connect."
+                : "Pair the printer in Android settings, then tap Connect printer and select its serial port.";
+      connectButton.disabled = !state.supported;
+      testButton.disabled = !state.connected;
+      disconnectButton.disabled = !state.connected && !state.name;
+    }
+
+    const unsubscribe = printer.onChange(update);
+    async function loadDevices() {
+      if (!printer.isNative) return;
+      refreshButton.disabled = true;
+      try {
+        const devices = await printer.listPaired();
+        if (!panel.isConnected) return;
+        deviceSelect.innerHTML = devices.length
+          ? devices.map((device) => `<option value="${escapeHTML(device.address)}" ${device.address === printer.getState().address ? "selected" : ""}>${escapeHTML(device.name)} · ${escapeHTML(device.address)}</option>`).join("")
+          : `<option value="">No paired Bluetooth devices</option>`;
+      } catch (error) { toastMessage(error.message || "Could not list paired Bluetooth devices.", true); }
+      finally { if (panel.isConnected) refreshButton.disabled = false; }
+    }
+    deviceWrap.hidden = !printer.isNative;
+    refreshButton.hidden = !printer.isNative;
+    await loadDevices();
+
+    connectButton.addEventListener("click", async () => {
+      connectButton.disabled = true;
+      try {
+        if (printer.isNative) {
+          const option = deviceSelect.selectedOptions[0];
+          await printer.connect(deviceSelect.value, option?.textContent?.split(" · ")[0] || "Bluetooth printer");
+        } else await printer.connect();
+        toastMessage("Bluetooth printer connected.");
+      } catch (error) { toastMessage(error.message || "Could not connect to the printer.", true); }
+      finally { if (panel.isConnected) connectButton.disabled = false; }
+    });
+    refreshButton.addEventListener("click", loadDevices);
+    testButton.addEventListener("click", async () => {
+      testButton.disabled = true;
+      try { await printer.test(data.settings); toastMessage("Test receipt sent to the printer."); }
+      catch (error) { toastMessage(error.message || "Could not print the test receipt.", true); }
+      finally { if (panel.isConnected) testButton.disabled = false; }
+    });
+    disconnectButton.addEventListener("click", async () => {
+      try { await printer.disconnect({ forget: true }); toastMessage("Bluetooth printer disconnected and forgotten."); }
+      catch (error) { toastMessage(error.message || "Could not disconnect the printer.", true); }
+    });
+    window.addEventListener("hashchange", unsubscribe, { once: true });
+  }
+
   function renderSettings() {
     const s = data.settings;
     syncStateUnsubscribe?.();
@@ -518,6 +599,13 @@
           ${formField("Total rounding", `<select name="roundingMode"><option value="half-up" ${s.roundingMode === "half-up" ? "selected" : ""}>Half up</option><option value="down" ${s.roundingMode === "down" ? "selected" : ""}>Down</option></select>`, "Applies to new purchases only.")}
         </div></section>
         <div class="form-actions"><button class="button button-primary" type="submit">Save settings</button></div></form>
+      <section class="panel printer-panel" id="thermal-printer-settings">
+        <div class="panel-heading"><div><h2>Bluetooth thermal printer</h2><p>Direct ESC/POS printing for common paired 58 mm and 80 mm Bluetooth printers.</p></div></div>
+        <p class="sync-status" id="thermal-printer-status" role="status" aria-live="polite"></p>
+        <label class="compact-field" id="thermal-device-wrap">Paired printer<select id="thermal-device"></select></label>
+        <div class="cloud-auth-actions printer-actions"><button class="button button-outline" id="thermal-refresh" type="button">Refresh paired devices</button><button class="button button-primary" id="thermal-connect" type="button">Connect printer</button><button class="button button-outline" id="thermal-test" type="button">Test print</button><button class="button button-outline" id="thermal-disconnect" type="button">Disconnect</button></div>
+        <p class="printer-help">Pair the printer in Android settings first. Direct printing uses 80 mm only when that receipt size is selected; every other size uses the safer 58 mm layout.</p>
+      </section>
       <section class="panel cloud-sync-panel" id="cloud-sync-settings">
         <div class="panel-heading"><div><h2>Cloud sync</h2><p>Keep this device's records available on your other signed-in devices.</p></div></div>
         <p class="sync-status" id="sync-status" role="status" aria-live="polite"></p>
@@ -593,6 +681,7 @@
         toastMessage("Signed out. Local data remains on this device.");
       } catch (error) { toastMessage(error.message || "Could not sign out.", true); }
     });
+    setupThermalPrinterSettings().catch((error) => toastMessage(error.message || "Could not initialize Bluetooth printing.", true));
     app.querySelector("#settings-form").addEventListener("submit", (event) => {
       event.preventDefault();
       const form = event.currentTarget;
@@ -665,6 +754,26 @@
       case "settings": renderSettings(); break;
       default: renderDashboard();
     }
+  }
+
+  function accountInitials(email) {
+    const name = String(email || "").split("@")[0].replace(/[^a-z0-9]+/gi, " ").trim();
+    const parts = name.split(/\s+/).filter(Boolean);
+    return ((parts[0]?.[0] || "U") + (parts[1]?.[0] || parts[0]?.[1] || "")).toUpperCase();
+  }
+  function updateAccountUI(state) {
+    document.querySelectorAll("[data-account-toggle]").forEach((button) => {
+      button.hidden = !state.user;
+      if (state.user) {
+        button.textContent = accountInitials(state.user.email);
+        button.title = state.user.email || "Signed-in user";
+      }
+    });
+    document.querySelectorAll("[data-account-menu]").forEach((menu) => {
+      if (!state.user) { menu.hidden = true; return; }
+      const syncLabel = state.error ? "Sync needs attention" : state.syncing ? "Syncing…" : state.lastSyncedAt ? "Cloud data synced" : "Signed in";
+      menu.innerHTML = `<div class="account-identity"><strong>${escapeHTML(state.user.email || "Signed-in user")}</strong><span class="account-status"><i class="${state.error ? "is-error" : ""}"></i>${escapeHTML(syncLabel)}</span></div><a href="#/settings">Account & settings</a><button type="button" data-action="account-sign-out">Sign out</button>`;
+    });
   }
 
   function openDialog(title, body, submitText = "Save") {
@@ -887,6 +996,27 @@
   }
 
   document.addEventListener("click", (event) => {
+    const accountToggle = event.target.closest("[data-account-toggle]");
+    if (accountToggle) {
+      const menu = document.getElementById(accountToggle.getAttribute("aria-controls"));
+      const open = menu.hidden;
+      document.querySelectorAll("[data-account-menu]").forEach((item) => { item.hidden = true; });
+      document.querySelectorAll("[data-account-toggle]").forEach((item) => item.setAttribute("aria-expanded", "false"));
+      menu.hidden = !open;
+      accountToggle.setAttribute("aria-expanded", String(open));
+      return;
+    }
+    if (event.target.closest('[data-action="account-sign-out"]')) {
+      window.GrainSync.signOut().then(() => {
+        updateAccountUI(window.GrainSync.getState());
+        toastMessage("Signed out. Local data remains on this device.");
+      }).catch((error) => toastMessage(error.message || "Could not sign out.", true));
+      return;
+    }
+    if (!event.target.closest("[data-account-menu]")) {
+      document.querySelectorAll("[data-account-menu]").forEach((item) => { item.hidden = true; });
+      document.querySelectorAll("[data-account-toggle]").forEach((item) => item.setAttribute("aria-expanded", "false"));
+    }
     const navigationLink = event.target.closest('a[href^="#/"]');
     if (purchaseFormDirty && currentRoute.name === "purchase" && navigationLink
       && !window.confirm("You have unsaved purchase details. Leave this page?")) {
@@ -929,6 +1059,7 @@
 
   try {
     data = window.GrainStorage.initialize();
+    accountStateUnsubscribe = window.GrainSync.onChange(updateAccountUI);
     render();
   } catch (error) {
     renderFatal(error);

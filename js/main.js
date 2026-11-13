@@ -5,6 +5,7 @@ import "./receipt.js";
 import "../data/sample-purchases.js";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import { createSupabaseSync } from "./supabase-sync.js";
+import { createThermalPrinter } from "./thermal-printer.js";
 
 const nativePrinter = registerPlugin("GrainPrint");
 window.GrainNativePrint = {
@@ -21,6 +22,7 @@ window.GrainNativePrint = {
     return true;
   }
 };
+window.GrainThermalPrinter = createThermalPrinter(nativePrinter, Capacitor.isNativePlatform());
 
 window.GrainSync = createSupabaseSync(
   import.meta.env.VITE_SUPABASE_URL || "",

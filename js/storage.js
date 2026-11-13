@@ -13,7 +13,7 @@
   const GRAIN_TYPES = ["Paddy", "Maize", "Jowar"];
   const DEFAULTS = {
     shopName: "", shopAddress: "", shopPhone: "", receiptPrefix: "GP", nextReceiptNumber: 1,
-    receiptPaper: "A5", weightDecimalPlaces: 3, defaultPaymentMode: "",
+    receiptPaper: "58mm", weightDecimalPlaces: 3, defaultPaymentMode: "",
     paymentEntryOpen: false, roundingMode: "half-up",
     nikaramWeightsG: { Paddy: 76500, Maize: 76500, Jowar: 76500 },
     bagSizesG: { Paddy: 70000, Maize: 60000, Jowar: 60000 },

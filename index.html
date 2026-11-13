@@ -15,6 +15,10 @@
     <div class="app-shell">
       <header class="mobile-header">
         <a class="brand" href="#/dashboard"><span class="brand-mark" aria-hidden="true">✦</span><span>Grain<span class="brand-light">wise</span></span></a>
+        <div class="account-menu-wrap">
+          <button class="avatar-button" type="button" aria-label="Open account menu" aria-controls="mobile-account-menu" aria-expanded="false" data-account-toggle hidden></button>
+          <div class="account-menu" id="mobile-account-menu" data-account-menu hidden></div>
+        </div>
       </header>
       <aside class="sidebar" aria-label="Main navigation">
         <a class="brand desktop-brand" href="#/dashboard"><span class="brand-mark" aria-hidden="true">✦</span><span>Grain<span class="brand-light">wise</span></span></a>
@@ -37,7 +41,7 @@
       <main class="main-content">
         <header class="topbar">
           <div class="breadcrumb"><span>Grainwise</span><span aria-hidden="true">/</span><strong id="route-title">Dashboard</strong></div>
-          <div class="topbar-actions"><span class="storage-label"><span class="offline-dot"></span> Saved on this device</span><button class="avatar-button" type="button" aria-label="Open settings" data-href="#/settings">AS</button></div>
+          <div class="topbar-actions"><span class="storage-label"><span class="offline-dot"></span> Saved on this device</span><div class="account-menu-wrap"><button class="avatar-button" type="button" aria-label="Open account menu" aria-controls="desktop-account-menu" aria-expanded="false" data-account-toggle hidden></button><div class="account-menu" id="desktop-account-menu" data-account-menu hidden></div></div></div>
         </header>
         <div id="app" class="page-content" tabindex="-1"></div>
         <footer class="desktop-footer">Grainwise · Local-first, with cloud sync when connected.</footer>
